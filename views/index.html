@@ -1,0 +1,36 @@
+<div class="d-flex flex-column align-items-center vw-100">
+    <div class="d-flex flex-row">
+        <a class="mx-2 selected" id="words10">10</a>
+        <p>|</p>
+        <a class="mx-2" id="words20">20</a>
+        <p>|</p>
+        <a class="mx-2" id="words30">30</a>
+        <p>|</p>
+        <a class="mx-2" id="words40">40</a>
+        <p>|</p>
+        <a class="mx-2" id="words50">50</a>
+
+    </div>
+
+    <div class="text-center fade-in-target" style="max-width: 75vw;">
+        <h3 id="output"></h3>
+    </div>
+
+    <div class="d-flex flex-row mt-3">
+        <h5 id="data">0/30</h5>
+    </div>
+
+    <input type="text" id="input" autofocus autocomplete="off"
+        style="opacity: 0; position: absolute; width: 1px; height: 1px;">
+</div>
+
+<div id="overlay" class="position-absolute vh-100 vw-100 align-items-center"
+    style="backdrop-filter: blur(6px); top: 0; left: 0;">
+    <div class="text-center vw-100">
+        <h1>Loading...</h1>
+    </div>
+</div>
+
+
+
+<script src="/js/main.js"></script>

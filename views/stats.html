@@ -1,0 +1,27 @@
+<div class="d-flex flex-column align-items-center" style="max-width: 75vw;">
+    <span id="output">{{.TypeRun.Html}}</span>
+    <div class="d-flex flex-row">
+        <h5 class="mx-2">Real Wpm: {{.TypeRun.Wpm}}</h5>
+        <h5>|</h5>
+        <h5 class="mx-2">Avrage Wpm: {{.TypeRun.Awpm}}</h5>
+        <h5>|</h5>
+        <h5 class="mx-2">Accuracy: {{.TypeRun.Accuracy}}%</h5>
+        <h5>|</h5>
+        <h5 class="mx-2">Time: {{.TypeRun.Time}}s</h5>
+    </div>
+
+    <div class="d-flex flex-row">
+        <a class="mx-2" href="/">Save</a>
+        <p>|</p>
+        <a class="mx-2" href="/?id=last">Repeat</a>
+        <p>|</p>
+        <a class="mx-2" href="/"> New Test</a>
+        <p>|</p>
+        <a class="mx-2" href="/">Share</a>
+    </div>
+</div>
+<script src="/js/replay.js"></script>
+<script>
+    let textToHtml = document.getElementById("output");
+    textToHtml.innerHTML = textToHtml.innerText
+</script>
