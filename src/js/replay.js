@@ -1,8 +1,8 @@
 const output = document.getElementById("output");
-const caret = document.getElementById("caret");
+const caret = document.getElementById("ghostCaret");
 
 let interval = null;
-let data = null;
+let replay = null;
 
 async function GetReplay() {
     try {
@@ -13,7 +13,7 @@ async function GetReplay() {
         if (!response.ok) {
             throw new Error(`Response status: ${response.status}`);
         }
-        data = await response.json();
+        replay = await response.json();
         StartReplay();
     } catch (error) {
         console.error(error.message);
@@ -25,20 +25,21 @@ function StartReplay() {
         clearInterval(interval);
     }
     const startTime = Date.now();
-    interval = setInterval(ReplayLoop, 1, data, startTime);
+    interval = setInterval(ReplayLoop, 1, startTime);
 }
 
-function ReplayLoop(data, startTime) {
+function ReplayLoop(startTime) {
     let lastState = null;
     const timeSinceStart = Date.now() - startTime;
-    for (state in data.inputs) {
-        if (data.inputs[state].time >= timeSinceStart) {
+    for (const state in replay.inputs) {
+        if (replay.inputs[state].time >= timeSinceStart) {
             break;
         }
         lastState = state;
     }
-    SetOutput(data.inputs[lastState].value, data.target);
-    if (lastState == data.inputs.length - 1) {
+    SetOutput(replay.inputs[lastState].value, replay.target);
+    SetCaret(caret, "cursor");
+    if (lastState == replay.inputs.length - 1) {
         clearInterval(interval);
     }
 }

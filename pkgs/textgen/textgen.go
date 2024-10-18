@@ -1,4 +1,4 @@
-package textgenerator
+package textgen
 
 import (
 	"encoding/json"

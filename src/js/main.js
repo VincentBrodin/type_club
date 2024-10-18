@@ -3,6 +3,9 @@ const stats = document.getElementById("data");
 const output = document.getElementById("output");
 const overlay = document.getElementById("overlay");
 const caret = document.getElementById("caret");
+const ghostCaret = document.getElementById("ghostCaret");
+ghostCaret.innerText = "";
+let ghost = false;
 
 overlay.style.display = "flex";
 
@@ -47,6 +50,9 @@ let totalErrors = 0;
 
 let inputs = [];
 
+let replay = null;
+let interval = null;
+
 input.addEventListener("input", OnInput);
 input.addEventListener("blur", OnBlur);
 input.addEventListener("keydown", OnKeyDown);
@@ -60,17 +66,46 @@ async function OnLoaded() {
     if (id == null) {
         GetTarget();
     } else {
+        ghost = true;
         RemoveFade();
         const response = await fetch(`/replay?id=${id}`);
         if (!response.ok) {
+            window.location.href = "/";
             throw new Error(`Response status: ${response.status}`);
         }
-        const data = await response.json();
+        replay = await response.json();
         SetFade();
         overlay.style.display = "none";
-        SetTarget(data.target);
+        SetTarget(replay.target);
     }
 }
+
+function StartReplay() {
+    if (interval) {
+        clearInterval(interval);
+    }
+    const startTime = Date.now();
+    interval = setInterval(ReplayLoop, 1, startTime);
+}
+
+function ReplayLoop(startTime) {
+    let lastState = null;
+    const timeSinceStart = Date.now() - startTime;
+    for (const state in replay.inputs) {
+        if (replay.inputs[state].time >= timeSinceStart) {
+            break;
+        }
+        lastState = state;
+    }
+    //Calculates the cursor position
+    SetOutput(replay.inputs[lastState].value, replay.target);
+    SetCaret(ghostCaret, "cursor");
+    SetOutput(input.value, target);
+    if (lastState == replay.inputs.length - 1) {
+        clearInterval(interval);
+    }
+}
+
 async function GetTarget(wordCount = 10) {
     try {
         RemoveFade();
@@ -94,10 +129,12 @@ function SetTarget(value) {
     started = false;
     startTime = null;
     SetOutput("", target);
+    SetCaret(caret, "cursor");
 }
 
 function OnInput() {
     SetOutput(input.value, target);
+    SetCaret(caret, "cursor");
     const inputWords = input.value.split(" ").length - 1;
     const targetWords = target.split(" ").length;
 
@@ -115,6 +152,9 @@ function OnInput() {
     if (inputLen !== 0 && !started) {
         started = true;
         startTime = Date.now();
+        if (ghost) {
+            StartReplay();
+        }
     }
 
     //Add input to inputs

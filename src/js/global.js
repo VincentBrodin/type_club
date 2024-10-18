@@ -27,18 +27,17 @@ function SetOutput(text, target) {
 
     out += "</h3>";
     output.innerHTML = out;
-    SetCaret();
 }
 
-function SetCaret() {
-    const cursor = document.getElementById("cursor");
+function SetCaret(c, t) {
+    const cursor = document.getElementById(t);
     if (cursor == null) {
-        caret.innerText = "";
+        c.innerText = "";
         return;
     } else {
-        caret.innerText = "|";
+        c.innerText = "|";
     }
     const cursorRect = cursor.getBoundingClientRect();
-    caret.style.left = cursorRect.left - (cursorRect.width / 2) + "px";
-    caret.style.top = cursorRect.top + (cursorRect.height / 8) + "px";
+    c.style.left = cursorRect.left - (cursorRect.width / 2) + "px";
+    c.style.top = cursorRect.top + (cursorRect.height / 8) + "px";
 }
