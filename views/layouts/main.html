@@ -36,6 +36,25 @@
             color: #fb4943;
         }
 
+        #caret {
+            transition: left 0.15s ease, top 0.15s ease;
+            animation: blink 1s ease infinite;
+        }
+
+        @keyframes blink {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -62,6 +81,7 @@
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
     <script src="/js/animation.js"></script>
+    <script src="/js/global.js"></script>
 </body>
 
 </html>

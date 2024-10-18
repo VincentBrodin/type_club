@@ -96,21 +96,13 @@ function SetTarget(value) {
     SetOutput("", target);
 }
 
-function SetCaret() {
-    const cursor = document.getElementById("cursor");
-    if (cursor == null) {
-        caret.innerText = "";
-        return;
-    } else {
-        caret.innerText = "|";
-    }
-    const cursorRect = cursor.getBoundingClientRect();
-    caret.style.left = cursorRect.left - (cursorRect.width / 2) + "px";
-    caret.style.top = cursorRect.top + (cursorRect.height / 8) + "px";
-}
-
 function OnInput() {
     SetOutput(input.value, target);
+    const inputWords = input.value.split(" ").length - 1;
+    const targetWords = target.split(" ").length;
+
+    stats.innerText = `${inputWords}/${targetWords}`;
+
     const inputLen = input.value.length;
     const targetLen = target.length;
     //Accuracy checking
@@ -182,42 +174,6 @@ async function Done(data) {
     } catch (error) {
         console.error(error.message);
     }
-}
-
-function SetOutput(text, target) {
-    const inputWords = input.value.split(" ").length - 1;
-    const targetWords = target.split(" ").length;
-    stats.innerText = `${inputWords}/${targetWords}`;
-
-    const textLen = text.length;
-    const targetLen = target.length;
-
-    let out = "<h3>";
-    for (let i = 0; i < textLen; i++) {
-        if (text[i] == target[i]) {
-            out += target[i];
-        } else {
-            out += `<span class="text-danger text-decoration-underline">${
-                target[i]
-            }</span>`;
-        }
-    }
-
-    let first = true;
-    for (let i = textLen; i < targetLen; i++) {
-        if (first) {
-            first = false;
-            out += `<span id="cursor" class="text-secondary">${
-                target[i]
-            }</span>`;
-        } else {
-            out += `<span class="text-secondary">${target[i]}</span>`;
-        }
-    }
-
-    out += "</h3>";
-    output.innerHTML = out;
-    SetCaret();
 }
 
 function OnKeyDown(event) {
