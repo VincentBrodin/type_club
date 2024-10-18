@@ -1,4 +1,6 @@
 const output = document.getElementById("output");
+const caret = document.getElementById("caret");
+
 let interval = null;
 let data = null;
 
@@ -12,7 +14,7 @@ async function GetReplay() {
             throw new Error(`Response status: ${response.status}`);
         }
         data = await response.json();
-        StartReplay()
+        StartReplay();
     } catch (error) {
         console.error(error.message);
     }
@@ -20,9 +22,9 @@ async function GetReplay() {
 
 function StartReplay() {
     if (interval) {
-        clearInterval(interval)
+        clearInterval(interval);
     }
-    let startTime = Date.now();
+    const startTime = Date.now();
     interval = setInterval(ReplayLoop, 1, data, startTime);
 }
 
@@ -37,20 +39,22 @@ function ReplayLoop(data, startTime) {
     }
     SetOutput(data.inputs[lastState].value, data.target);
     if (lastState == data.inputs.length - 1) {
-        clearInterval(interval)
+        clearInterval(interval);
     }
 }
 
 function SetOutput(text, target) {
-    let textLen = text.length;
-    let targetLen = target.length;
+    const textLen = text.length;
+    const targetLen = target.length;
 
     let out = "<h3>";
     for (let i = 0; i < textLen; i++) {
         if (text[i] == target[i]) {
             out += target[i];
         } else {
-            out += `<span class="text-danger text-decoration-underline">${target[i]}</span>`;
+            out += `<span class="text-danger text-decoration-underline">${
+                target[i]
+            }</span>`;
         }
     }
 
@@ -58,7 +62,9 @@ function SetOutput(text, target) {
     for (let i = textLen; i < targetLen; i++) {
         if (first) {
             first = false;
-            out += `<span class="text-secondary text-decoration-underline">${target[i]}</span>`;
+            out += `<span id="cursor" class="text-secondary">${
+                target[i]
+            }</span>`;
         } else {
             out += `<span class="text-secondary">${target[i]}</span>`;
         }
@@ -66,7 +72,20 @@ function SetOutput(text, target) {
 
     out += "</h3>";
     output.innerHTML = out;
+    SetCaret();
 }
 
-GetReplay()
+function SetCaret() {
+    const cursor = document.getElementById("cursor");
+    if (cursor == null) {
+        caret.innerText = "";
+        return;
+    } else {
+        caret.innerText = "|";
+    }
+    const cursorRect = cursor.getBoundingClientRect();
+    caret.style.left = cursorRect.left - (cursorRect.width / 2) + "px";
+    caret.style.top = cursorRect.top + (cursorRect.height / 8) + "px";
+}
 
+GetReplay();

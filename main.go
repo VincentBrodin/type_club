@@ -52,6 +52,7 @@ func main() {
 	store = session.New()
 
 	engine := html.New("./views", ".html")
+	engine.Reload(true)
 	app := fiber.New(fiber.Config{
 		Views: engine,
 	})
