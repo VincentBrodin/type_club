@@ -5,11 +5,13 @@ import (
 )
 
 type RunInputs struct {
+	RunId int64   `json:"runId"`
 	Value string  `json:"value"`
 	Time  float64 `json:"time"`
 }
 
 type TypeRun struct {
+	Id       int64       `json:"id"`
 	Target   string      `json:"target"`
 	Html     string      `json:"html"`
 	Accuracy float64     `json:"accuracy"`

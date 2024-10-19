@@ -14,6 +14,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
         rel="stylesheet">
     <style>
+        :root {
+            --yellow: #fabd2f;
+            --red: #fb4943;
+        }
+
         * {
             font-family: "Space Mono", monospace !important;
             padding: 0;
@@ -21,7 +26,7 @@
         }
 
         a {
-            color: #fabd2f;
+            color: var(--yellow);
             text-decoration: none;
             font-weight: bold;
             transition: color 0.3s ease, text-shadow 0.3s;
@@ -29,16 +34,25 @@
         }
 
         a:hover {
-            color: #fb4943;
+            color: var(--red);
         }
 
         .selected {
-            color: #fb4943;
+            color: var(--red);
+        }
+
+        input[type="submit"] {
+            color: var(--yellow);
+            transition: color 0.3s ease, text-shadow 0.3s;
+        }
+
+        input[type="submit"]:hover {
+            color: var(--red);
         }
 
         #caret {
 
-            color: #fabd2f !important;
+            color: var(--yellow) !important;
             transition: left 0.15s ease, top 0.15s ease;
             animation: blink 1s ease infinite;
         }

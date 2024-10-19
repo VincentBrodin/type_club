@@ -5,6 +5,8 @@ go 1.23.2
 require (
 	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/gofiber/template/html/v2 v2.1.2
+	github.com/mattn/go-sqlite3 v1.14.24
+	golang.org/x/crypto v0.14.0
 )
 
 require (
