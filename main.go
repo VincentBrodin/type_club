@@ -4,13 +4,16 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"strconv"
+	"structs"
+
+	_ "github.com/mattn/go-sqlite3"
 
 	"github.com/VincentBrodin/type_club/pkgs/pswdhash"
 	"github.com/VincentBrodin/type_club/pkgs/textgen"
 	"github.com/VincentBrodin/type_club/pkgs/typeruns"
+	"github.com/VincentBrodin/type_club/pkgs/users"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
@@ -19,6 +22,7 @@ import (
 
 var modal map[string][]string
 var store *session.Store
+var db *sql.DB
 
 func main() {
 	var err error
@@ -27,7 +31,7 @@ func main() {
 		panic(err)
 	}
 
-	_, err = sql.Open("sqlite3", "data.db")
+	db, err = sql.Open("sqlite3", "db/base.db")
 	if err != nil {
 		panic(err)
 	}
@@ -124,10 +128,38 @@ func GetRandom(c *fiber.Ctx) error {
 }
 
 func GetAccount(c *fiber.Ctx) error {
-	return c.Redirect("/login")
+	sess, err := store.Get(c)
+	if err != nil {
+		return c.SendStatus(400)
+	}
+
+	body := fmt.Sprintf("%v", sess.Get("user"))
+	b := []byte(body)
+	fmt.Println(body)
+	user := &users.User{
+		Id: -1,
+	}
+	err = json.Unmarshal(b, user)
+
+	if err != nil || user.Id == -1 {
+		return c.Redirect("/login")
+	}
+	return c.Redirect("/")
+}
+
+func loggedIn(c *fiber.Ctx) bool {
+	sess, err := store.Get(c)
+	if err != nil {
+		return false
+	}
+
+	return sess.Get("user") != nil
 }
 
 func GetLogin(c *fiber.Ctx) error {
+	if loggedIn(c) {
+		return c.Redirect("/account")
+	}
 	return c.Render("login", fiber.Map{
 		"Title": "type_club | Login",
 	}, "layouts/main")
@@ -135,10 +167,46 @@ func GetLogin(c *fiber.Ctx) error {
 }
 
 func PostLogin(c *fiber.Ctx) error {
-	return c.SendStatus(404)
+	username := c.FormValue("username")
+	password := c.FormValue("password")
+	user, err := users.FindByUsername(username, db)
+	if err != nil {
+		return c.SendStatus(400)
+	}
+
+	if pswdhash.VerifyPassword(password, user.Password) {
+		err = addUserToSess(user, c)
+		if err != nil {
+			return c.SendStatus(404)
+		}
+		return c.Redirect("/")
+	}
+	return c.Redirect("/login")
+}
+
+func addUserToSess(user *users.User, c *fiber.Ctx) error {
+	sess, err := store.Get(c)
+	if err != nil {
+		return err
+	}
+
+	data, err := json.Marshal(user)
+	if err != nil {
+		return err
+	}
+
+	sess.Set("user", string(data))
+	err = sess.Save()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func GetRegister(c *fiber.Ctx) error {
+	if loggedIn(c) {
+		return c.Redirect("/account")
+	}
 	return c.Render("register", fiber.Map{
 		"Title": "type_club | Register",
 	}, "layouts/main")
@@ -150,12 +218,73 @@ func PostRegister(c *fiber.Ctx) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
 	hashed, err := pswdhash.HashPassword(password)
+
 	if err != nil {
-		return c.SendStatus(400)
+		fmt.Println(err)
+		return c.Redirect("/register")
 	}
 
-	fmt.Printf("%v %v %v %v\n", username, email, password, hashed)
-	return c.SendStatus(404)
+	if !validUsername(username) || !validEmail(email) {
+		return c.Redirect("/register")
+
+	}
+
+	user := users.New(username, email, hashed)
+	err = user.AddToDb(db)
+	if err != nil {
+		fmt.Println(err)
+		return c.Redirect("/register")
+	}
+
+	err = addUserToSess(user, c)
+	if err != nil {
+		fmt.Println(err)
+		return c.Redirect("/register")
+	}
+
+	return c.Redirect("/account")
+}
+
+func PostValidateAccount(c *fiber.Ctx) error {
+	username := c.FormValue("username")
+	email := c.FormValue("email")
+
+	output := struct {
+		Username bool `json:"username"`
+		Email    bool `json:"email"`
+	}{
+		Username: validUsername(username),
+		Email:    validEmail(email),
+	}
+
+	data, err := json.Marshal(output)
+	if err != nil {
+		return c.SendStatus(404)
+	}
+
+	return c.SendString(string(data))
+}
+
+func validEmail(email string) bool {
+	user, err := users.FindByEmail(email, db)
+	if err != nil {
+		return true
+	}
+	if user.Id == -1 {
+		return true
+	}
+	return false
+}
+
+func validUsername(username string) bool {
+	user, err := users.FindByUsername(username, db)
+	if err != nil {
+		return true
+	}
+	if user.Id == -1 {
+		return true
+	}
+	return false
 }
 
 func PostDone(c *fiber.Ctx) error {
@@ -177,7 +306,8 @@ func PostDone(c *fiber.Ctx) error {
 
 	if err := sess.Save(); err != nil {
 		fmt.Println(err)
-		return c.SendStatus(400)
+		return c.Redirect("/")
+
 	}
 
 	return c.Redirect("/stats?id=last")
