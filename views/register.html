@@ -1,14 +1,14 @@
-<form method="post" action="/register">
+<form method="post" action="/register" id="form">
     <div class="form-group">
         <label for="username">Username:</label>
-        <input class="form-control" type="text" name="username">
+        <input class="form-control" type="text" name="username" id="username">
+        <p id="usernameTaken" class="text-danger">Username taken</p>
     </div>
-    <br>
     <div class="form-group">
         <label for="email">Email:</label>
-        <input class="form-control" type="email" name="email">
+        <input class="form-control" type="email" name="email" id="email">
+        <p id="emailTaken" class="text-danger">Email taken</p>
     </div>
-    <br>
     <div class="form-group">
         <label for="password">Password:</label>
         <input class="form-control" type="password" name="password">
@@ -20,3 +20,6 @@
     <br>
     <p>Have an account? <a href="/login">Login here.</a></p>
 </form>
+
+
+<script src="/js/register.js"></script>

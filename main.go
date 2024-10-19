@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"structs"
 
 	_ "github.com/mattn/go-sqlite3"
 
@@ -61,6 +60,8 @@ func main() {
 
 	app.Get("/register", GetRegister)
 	app.Post("/register", PostRegister)
+
+	app.Post("/validate", PostValidateAccount)
 
 	app.Post("/done", PostDone)
 
@@ -135,7 +136,6 @@ func GetAccount(c *fiber.Ctx) error {
 
 	body := fmt.Sprintf("%v", sess.Get("user"))
 	b := []byte(body)
-	fmt.Println(body)
 	user := &users.User{
 		Id: -1,
 	}
@@ -144,7 +144,10 @@ func GetAccount(c *fiber.Ctx) error {
 	if err != nil || user.Id == -1 {
 		return c.Redirect("/login")
 	}
-	return c.Redirect("/")
+
+	return c.Render("account", fiber.Map{
+		"Title": "type_club | Account",
+	}, "layouts/main")
 }
 
 func loggedIn(c *fiber.Ctx) bool {
@@ -246,19 +249,27 @@ func PostRegister(c *fiber.Ctx) error {
 }
 
 func PostValidateAccount(c *fiber.Ctx) error {
-	username := c.FormValue("username")
-	email := c.FormValue("email")
+	input := &struct {
+		Username string `json:"username"`
+		Email    string `json:"email"`
+	}{}
+
+	err := c.BodyParser(input)
+	if err != nil {
+		return c.SendStatus(400)
+	}
 
 	output := struct {
 		Username bool `json:"username"`
 		Email    bool `json:"email"`
 	}{
-		Username: validUsername(username),
-		Email:    validEmail(email),
+		Username: validUsername(input.Username),
+		Email:    validEmail(input.Email),
 	}
 
 	data, err := json.Marshal(output)
 	if err != nil {
+		fmt.Println(err)
 		return c.SendStatus(404)
 	}
 
