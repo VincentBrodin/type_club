@@ -41,14 +41,22 @@
             color: var(--red);
         }
 
-        input[type="submit"] {
+        input[type="submit"],
+        input[type="button"] {
             color: var(--yellow);
-            transition: color 0.3s ease, text-shadow 0.3s;
+            transition: 0.3s ease;
         }
 
-        input[type="submit"]:hover {
+        input[type="submit"]:hover,
+        input[type="button"]:hover {
             color: var(--red);
         }
+
+        .danger:hover {
+            color: var(--yellow) !important;
+            background-color: var(--red);
+        }
+
 
         #caret {
 

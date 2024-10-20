@@ -1,0 +1,55 @@
+<div class="d-flex flex-column" style="min-width: 25vw;">
+    <h4>Account</h4>
+    <hr>
+    <label for="username">Username:</label>
+    <input class="form-control" id="username" type="text" value="{{.User.Username}}">
+    <input class="form-control mt-2" id="updateUsername" type="button" value="Update" style="width: 50%;">
+    <br>
+    <label for="email">Email:</label>
+    <input class="form-control" id="email" type="email" value="{{.User.Email}}">
+    <input class="form-control mt-2" id="updateEmail" type="button" value="Update" style="width: 50%;">
+    <br>
+
+    <h4>Passoword</h4>
+    <hr>
+    <label for="currentPassword">Current Password:</label>
+    <input class="form-control" id="currentPassword" type="password">
+    <br>
+    <label for="newPassword">New Password:</label>
+    <input class="form-control" id="newPassword" type="password">
+    <br>
+    <label for="repeatNewPassword">Repeat New Password:</label>
+    <input class="form-control" id="repeatNewPassword" type="password">
+    <input class="form-control mt-2" id="updatePassword" type="button" value="Update" style="width: 50%;">
+    <br>
+
+    <!--<h4>Privacy</h4>-->
+    <!--<hr>-->
+    <!---->
+    <!--<br>-->
+    <h4>Other</h4>
+    <hr>
+    <label for="delete">Delete Account:</label>
+    <input class="form-control mt-1 danger" type="button" value="Delete Account" data-bs-toggle="modal"
+        data-bs-target="#modal">
+    <!-- Modal -->
+    <div class="modal fade" id="modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Are you sure?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>This action is not revertble, once you delete your account, all of you runs, data and settings
+                        will be removed and gone forever.</p>
+                </div>
+                <div class="modal-footer">
+                    <input class="form-control" type="button" value="Close" style="width: 25%;" data-bs-dismiss="modal">
+                    <input id="deleteAccount" class="form-control danger" type="button" value="Delete"
+                        style="width: 25%;">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

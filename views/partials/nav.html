@@ -1,24 +1,36 @@
 <nav class="navbar navbar-expand-sm">
     <div class="container-fluid">
+
         <a class="navbar-brand" href="/">type_club</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mynavbar">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbar">
-            <ul class="navbar-nav me-auto">
-                <!--<li class="nav-item">-->
-                <!--    <a class="nav-link" href="javascript:void(0)">Link</a>-->
-                <!--</li>-->
-                <!--<li class="nav-item">-->
-                <!--    <a class="nav-link" href="javascript:void(0)">Link</a>-->
-                <!--</li>-->
-                <!--<li class="nav-item">-->
-                <!--    <a class="nav-link" href="javascript:void(0)">Link</a>-->
-                <!--</li>-->
-            </ul>
-            <a class="navbar-brand" href="/account">
-                <img src="https://placehold.co/400" alt="Avatar Logo" style="width:40px;" class="rounded-pill">
-            </a>
-        </div>
+
+        <ul class="navbar-nav me-auto">
+            <!--Right-->
+        </ul>
+
+        <ul class="navbar-nav ms-auto">
+            {{ if .LoggedIn}}
+            <li class="nav-item dropdown">
+                <a class="nav-link" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                    <img class="rounded-pill" src="/images/user.png" alt="Avatar Logo" style="width:40px;">
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end"
+                    aria-labelledby="navbarDarkDropdownMenuLink">
+                    <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                    <li><a class="dropdown-item" href="/account">Account</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item text-danger" href="/logout">Logout</a></li>
+                </ul>
+            </li>
+            {{ else }}
+            <li class="nav-item">
+                <a class="nav-link" href="/login">
+                    Login
+                </a>
+            </li>
+            {{ end }}
+        </ul>
     </div>
 </nav>

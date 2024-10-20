@@ -61,6 +61,8 @@ func main() {
 	app.Get("/register", GetRegister)
 	app.Post("/register", PostRegister)
 
+	app.Get("/logout", GetLogout)
+
 	app.Post("/validate", PostValidateAccount)
 
 	app.Post("/done", PostDone)
@@ -70,7 +72,8 @@ func main() {
 
 func GetHome(c *fiber.Ctx) error {
 	return c.Render("index", fiber.Map{
-		"Title": "type_club | Home",
+		"Title":    "type_club | Home",
+		"LoggedIn": loggedIn(c),
 	}, "layouts/main")
 }
 
@@ -92,8 +95,9 @@ func GetStats(c *fiber.Ctx) error {
 			return c.Redirect("/")
 		}
 		return c.Render("stats", fiber.Map{
-			"Title":   "type_club | Stats",
-			"TypeRun": typeruns.Clean(payload),
+			"Title":    "type_club | Stats",
+			"LoggedIn": loggedIn(c),
+			"TypeRun":  typeruns.Clean(payload),
 		}, "layouts/main")
 	}
 	return c.SendString(id)
@@ -129,24 +133,20 @@ func GetRandom(c *fiber.Ctx) error {
 }
 
 func GetAccount(c *fiber.Ctx) error {
-	sess, err := store.Get(c)
+	fmt.Println(loggedIn(c))
+	if !loggedIn(c) {
+		return c.Redirect("/login")
+	}
+
+	user, err := getUserFromSess(c)
 	if err != nil {
-		return c.SendStatus(400)
-	}
-
-	body := fmt.Sprintf("%v", sess.Get("user"))
-	b := []byte(body)
-	user := &users.User{
-		Id: -1,
-	}
-	err = json.Unmarshal(b, user)
-
-	if err != nil || user.Id == -1 {
 		return c.Redirect("/login")
 	}
 
 	return c.Render("account", fiber.Map{
-		"Title": "type_club | Account",
+		"Title":    "type_club | Account",
+		"LoggedIn": loggedIn(c),
+		"User":     *user,
 	}, "layouts/main")
 }
 
@@ -155,8 +155,7 @@ func loggedIn(c *fiber.Ctx) bool {
 	if err != nil {
 		return false
 	}
-
-	return sess.Get("user") != nil
+	return !(sess.Get("user") == nil)
 }
 
 func GetLogin(c *fiber.Ctx) error {
@@ -164,12 +163,16 @@ func GetLogin(c *fiber.Ctx) error {
 		return c.Redirect("/account")
 	}
 	return c.Render("login", fiber.Map{
-		"Title": "type_club | Login",
+		"Title":    "type_club | Login",
+		"LoggedIn": loggedIn(c),
 	}, "layouts/main")
 
 }
 
 func PostLogin(c *fiber.Ctx) error {
+	if loggedIn(c) {
+		return c.Redirect("/account")
+	}
 	username := c.FormValue("username")
 	password := c.FormValue("password")
 	user, err := users.FindByUsername(username, db)
@@ -182,7 +185,7 @@ func PostLogin(c *fiber.Ctx) error {
 		if err != nil {
 			return c.SendStatus(404)
 		}
-		return c.Redirect("/")
+		return c.Redirect("/account")
 	}
 	return c.Redirect("/login")
 }
@@ -206,17 +209,43 @@ func addUserToSess(user *users.User, c *fiber.Ctx) error {
 	return nil
 }
 
+func getUserFromSess(c *fiber.Ctx) (*users.User, error) {
+	sess, err := store.Get(c)
+	if err != nil {
+		return nil, err
+	}
+
+	user := &users.User{
+		Id: -1,
+	}
+	data := []byte(fmt.Sprintf("%v", sess.Get("user")))
+	err = json.Unmarshal(data, user)
+	if err != nil {
+		return nil, err
+	}
+
+	if user.Id == -1 {
+		return nil, fmt.Errorf("Could not get user")
+	}
+
+	return user, nil
+}
+
 func GetRegister(c *fiber.Ctx) error {
 	if loggedIn(c) {
 		return c.Redirect("/account")
 	}
 	return c.Render("register", fiber.Map{
-		"Title": "type_club | Register",
+		"Title":    "type_club | Register",
+		"LoggedIn": loggedIn(c),
 	}, "layouts/main")
 
 }
 
 func PostRegister(c *fiber.Ctx) error {
+	if loggedIn(c) {
+		return c.Redirect("/account")
+	}
 	username := c.FormValue("username")
 	email := c.FormValue("email")
 	password := c.FormValue("password")
@@ -246,6 +275,25 @@ func PostRegister(c *fiber.Ctx) error {
 	}
 
 	return c.Redirect("/account")
+}
+
+func GetLogout(c *fiber.Ctx) error {
+	if !loggedIn(c) {
+		return c.Redirect("/login")
+	}
+
+	sess, err := store.Get(c)
+	if err != nil {
+		return err
+	}
+
+	sess.Delete("user")
+	err = sess.Save()
+	if err != nil {
+		return err
+	}
+
+	return c.Redirect("/login")
 }
 
 func PostValidateAccount(c *fiber.Ctx) error {
