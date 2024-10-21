@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 
@@ -44,7 +45,9 @@ func main() {
 	})
 
 	//Static
-	app.Static("/js/", "./src/js/")
+	app.Static("/js/", "./src/js/", fiber.Static{
+		CacheDuration: 10 * time.Millisecond,
+	})
 	app.Static("/images/", "./src/images/")
 
 	//Routs
@@ -64,6 +67,7 @@ func main() {
 	app.Get("/logout", GetLogout)
 
 	app.Post("/validate", PostValidateAccount)
+	app.Post("/update", PostUpdate)
 
 	app.Post("/done", PostDone)
 
@@ -133,7 +137,6 @@ func GetRandom(c *fiber.Ctx) error {
 }
 
 func GetAccount(c *fiber.Ctx) error {
-	fmt.Println(loggedIn(c))
 	if !loggedIn(c) {
 		return c.Redirect("/login")
 	}
@@ -322,6 +325,48 @@ func PostValidateAccount(c *fiber.Ctx) error {
 	}
 
 	return c.SendString(string(data))
+}
+
+func PostUpdate(c *fiber.Ctx) error {
+	input := &struct {
+		Username string `json:"username"`
+		Email    string `json:"email"`
+	}{}
+
+	err := c.BodyParser(input)
+	if err != nil {
+		return c.SendStatus(400)
+	}
+
+	user, err := getUserFromSess(c)
+	if err != nil {
+		return c.SendStatus(400)
+	}
+
+	if input.Username != "" {
+		if !validUsername(input.Username) {
+			return c.SendStatus(400)
+		}
+		user.Username = input.Username
+	}
+	if input.Email != "" {
+		if !validEmail(input.Email) {
+			return c.SendStatus(400)
+		}
+		user.Email = input.Email
+	}
+
+	err = user.Update(db)
+	if err != nil {
+		return c.SendStatus(400)
+	}
+
+	err = addUserToSess(user, c)
+	if err != nil {
+		return c.SendStatus(400)
+	}
+
+	return c.SendStatus(200)
 }
 
 func validEmail(email string) bool {

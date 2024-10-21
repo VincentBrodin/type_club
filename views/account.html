@@ -3,10 +3,12 @@
     <hr>
     <label for="username">Username:</label>
     <input class="form-control" id="username" type="text" value="{{.User.Username}}">
+    <p id="usernameTaken" class="text-danger">Username taken</p>
     <input class="form-control mt-2" id="updateUsername" type="button" value="Update" style="width: 50%;">
     <br>
     <label for="email">Email:</label>
     <input class="form-control" id="email" type="email" value="{{.User.Email}}">
+    <p id="emailTaken" class="text-danger">Email taken</p>
     <input class="form-control mt-2" id="updateEmail" type="button" value="Update" style="width: 50%;">
     <br>
 
@@ -68,5 +70,15 @@
         </div>
     </div>
 </div>
+
+
+<div id="overlay" class="position-absolute vh-100 vw-100 align-items-center justify-content-center"
+    style="backdrop-filter: blur(6px); top: 0; left: 0;">
+    <div class="text-center">
+        <h1 id="loading">Loading...</h1>
+    </div>
+</div>
+
+
 
 <script src="/js/account.js"></script>

@@ -2,6 +2,7 @@ package users
 
 import (
 	"database/sql"
+	"fmt"
 )
 
 /*
@@ -51,6 +52,26 @@ func (u *User) AddToDb(db *sql.DB) error {
 		return err
 	}
 	u.Id = id
+
+	return nil
+}
+
+func (u *User) Update(db *sql.DB) error {
+	prompt := "UPDATE users SET username = ?, email = ?, password = ? WHERE id = ?"
+	statement, err := db.Prepare(prompt)
+	if err != nil {
+		fmt.Println("Error at statement")
+		return err
+	}
+
+	defer statement.Close()
+
+	_, err = statement.Exec(u.Username, u.Email, u.Password, u.Id)
+
+	if err != nil {
+		fmt.Println("Error at execution")
+		return err
+	}
 
 	return nil
 }

@@ -1,13 +1,15 @@
 const input = document.getElementById("input");
 const stats = document.getElementById("data");
 const output = document.getElementById("output");
-const overlay = document.getElementById("overlay");
 const caret = document.getElementById("caret");
 const ghostCaret = document.getElementById("ghostCaret");
 ghostCaret.innerText = "";
 let ghost = false;
 
-overlay.style.display = "flex";
+const overlay = document.getElementById("overlay");
+const loading = document.getElementById("loading");
+let loadingDots = 1;
+OverlayOn();
 
 const words10 = document.getElementById("words10");
 words10.addEventListener("click", () => {
@@ -75,7 +77,7 @@ async function OnLoaded() {
         }
         replay = await response.json();
         SetFade();
-        overlay.style.display = "none";
+        OverlayOff();
         SetTarget(replay.target);
     }
 }
@@ -114,7 +116,7 @@ async function GetTarget(wordCount = 10) {
             throw new Error(`Response status: ${response.status}`);
         }
         SetFade();
-        overlay.style.display = "none";
+        OverlayOff();
         const text = await response.text();
         SetTarget(text);
     } catch (error) {
@@ -168,7 +170,7 @@ function OnInput() {
     if (inputLen === targetLen) {
         //Show overlay and hide input
         input.type = "hidden";
-        overlay.style.display = "flex";
+        OverlayOn();
         //WPM
         const milisecs = Date.now() - startTime;
         const secs = milisecs / 1000;
@@ -250,3 +252,26 @@ function RemoveSelected() {
     words40.classList.remove("selected");
     words50.classList.remove("selected");
 }
+
+function OverlayOn() {
+    overlay.classList.add("d-flex");
+    overlay.classList.remove("d-none");
+}
+
+function OverlayOff() {
+    overlay.classList.remove("d-flex");
+    overlay.classList.add("d-none");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    setInterval(() => {
+        loadingDots++;
+        loadingDots = loadingDots % 3;
+        let text = "Loading";
+        for (let i = 0; i <= loadingDots; i++) {
+            text += ".";
+        }
+        loading.innerText = text;
+    }, 500);
+    OverlayOff();
+});
