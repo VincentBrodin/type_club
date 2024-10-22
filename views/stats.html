@@ -11,17 +11,24 @@
     </div>
 
     <div class="d-flex flex-row">
-        {{ if .LoggedIn }}
-        <a id="save" class="mx-2" href="/">Save</a>
-        <p>|</p>
-        {{ end }}
-        <a class="mx-2" href="/?id=last">Repeat</a>
-        <p>|</p>
-        <a class="mx-2" href="/"> New Test</a>
-        {{ if .LoggedIn }}
-        <p>|</p>
-        <a class="mx-2" href="/">Share</a>
-        {{ end }}
+
+        <div class="d-flex flex-row">
+            {{ if .LoggedIn }}
+            {{ if not .Last }}
+            <a id="save" class="mx-2" href="/">Save</a>
+            <p>|</p>
+            {{ end }}
+            {{ end }}
+            <a class="mx-2" href="/?id=last">Repeat</a>
+            <p>|</p>
+            <a class="mx-2" href="/">New Test</a>
+            {{ if .LoggedIn }}
+            {{ if not .Last }}
+            <p>|</p>
+            <a class="mx-2" href="/">Share</a>
+            {{ end }}
+            {{ end }}
+        </div>
     </div>
 
     <h3 id="ghostCaret" class="position-absolute">|</h3>

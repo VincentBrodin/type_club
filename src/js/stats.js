@@ -11,8 +11,8 @@ async function Save(event) {
                 "Content-Type": "application/json; charset=UTF-8",
             },
         });
-        if (response.ok) {
-            console.log("OK");
+        if (response.redirected) {
+            window.location.href = response.url;
         }
         OverlayOff();
     } catch (error) {

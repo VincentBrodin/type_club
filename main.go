@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 
 	_ "github.com/mattn/go-sqlite3"
 
@@ -103,9 +104,27 @@ func GetStats(c *fiber.Ctx) error {
 			"Title":    "type_club | Stats",
 			"LoggedIn": loggedIn(c),
 			"TypeRun":  typerun.Clean(),
+			"Last":     true,
 		}, "layouts/main")
+	} else {
+		i, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			return c.SendStatus(400)
+		}
+
+		typerun, err := typeruns.FindById(i, db)
+		if err != nil {
+			return c.SendStatus(404)
+		}
+
+		return c.Render("stats", fiber.Map{
+			"Title":    "type_club | Stats",
+			"LoggedIn": loggedIn(c),
+			"TypeRun":  typerun.Clean(),
+			"Last":     false,
+		}, "layouts/main")
+
 	}
-	return c.SendString(id)
 }
 
 func PostStats(c *fiber.Ctx) error {
@@ -126,8 +145,26 @@ func PostStats(c *fiber.Ctx) error {
 	if input.Id == "last" {
 		body := fmt.Sprintf("%v", sess.Get("last"))
 		return c.SendString(body)
+	} else {
+		i, err := strconv.ParseInt(input.Id, 10, 64)
+		if err != nil {
+			return c.SendStatus(400)
+		}
+
+		typerun, err := typeruns.FindById(i, db)
+		if err != nil {
+			return c.SendStatus(404)
+		}
+
+		body, err := json.Marshal(typerun)
+
+		if err != nil {
+			return c.SendStatus(400)
+		}
+
+		fmt.Println(string(body))
+		return c.SendString(string(body))
 	}
-	return c.SendString(input.Id)
 }
 
 func PostSentence(c *fiber.Ctx) error {
@@ -490,5 +527,5 @@ func PostSave(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 
-	return c.SendStatus(200)
+	return c.Redirect(fmt.Sprintf("/stats?id=%d", typerun.Id))
 }

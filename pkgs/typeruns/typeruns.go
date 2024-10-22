@@ -6,6 +6,7 @@ import (
 )
 
 type RunInputs struct {
+	Id    int64   `json:"id"`
 	RunId int64   `json:"runId"`
 	Value string  `json:"value"`
 	Time  float64 `json:"time"`
@@ -59,9 +60,70 @@ func (t *TypeRun) AddToDb(db *sql.DB) error {
 		return err
 	}
 	t.Id = id
+	for i := range t.Inputs {
+		t.Inputs[i].RunId = id
+	}
+	AddInputsToDb(t.Inputs, db)
 	return nil
 }
 
-func AddToDb(inputs *[]RunInputs, db *sql.DB) error {
+func AddInputsToDb(inputs []RunInputs, db *sql.DB) error {
+	for i := range inputs {
+		prompt := "INSERT INTO run_inputs (run_id, value, time) VALUES (?, ?, ?)"
+		statement, err := db.Prepare(prompt)
+		if err != nil {
+			return err
+		}
+		defer statement.Close()
+
+		//Execute statement
+		result, err := statement.Exec(inputs[i].RunId, inputs[i].Value, inputs[i].Time)
+		if err != nil {
+			return err
+		}
+
+		//Assign the user their id
+		id, err := result.LastInsertId()
+		if err != nil {
+			return err
+		}
+		inputs[i].Id = id
+
+	}
 	return nil
+}
+
+func FindById(id int64, db *sql.DB) (*TypeRun, error) {
+	// Query for the TypeRun by id
+	runQuery := "SELECT id, target, html, accuracy, wpm, awpm, time FROM runs WHERE id = ?"
+	run := &TypeRun{}
+	err := db.QueryRow(runQuery, id).Scan(&run.Id, &run.Target, &run.Html, &run.Accuracy, &run.Wpm, &run.Awpm, &run.Time)
+	if err != nil {
+		return nil, err
+	}
+
+	// Query for the related RunInputs
+	inputsQuery := "SELECT id, run_id, value, time FROM run_inputs WHERE run_id = ?"
+	rows, err := db.Query(inputsQuery, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Populate the Inputs field of the TypeRun
+	for rows.Next() {
+		var input RunInputs
+		err := rows.Scan(&input.Id, &input.RunId, &input.Value, &input.Time)
+		if err != nil {
+			return nil, err
+		}
+		run.Inputs = append(run.Inputs, input)
+	}
+
+	// Check for any errors after reading all rows
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return run, nil
 }
