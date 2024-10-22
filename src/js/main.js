@@ -6,11 +6,6 @@ const ghostCaret = document.getElementById("ghostCaret");
 ghostCaret.innerText = "";
 let ghost = false;
 
-const overlay = document.getElementById("overlay");
-const loading = document.getElementById("loading");
-let loadingDots = 1;
-OverlayOn();
-
 const words10 = document.getElementById("words10");
 words10.addEventListener("click", () => {
     RemoveSelected();
@@ -60,6 +55,9 @@ input.addEventListener("blur", OnBlur);
 input.addEventListener("keydown", OnKeyDown);
 
 document.addEventListener("DOMContentLoaded", OnLoaded);
+window.addEventListener("resize", () => {
+    SetCaret(caret, "cursor");
+});
 
 async function OnLoaded() {
     const queryString = window.location.search;
@@ -70,15 +68,33 @@ async function OnLoaded() {
     } else {
         ghost = true;
         RemoveFade();
-        const response = await fetch(`/replay?id=${id}`);
-        if (!response.ok) {
-            window.location.href = "/";
-            throw new Error(`Response status: ${response.status}`);
-        }
-        replay = await response.json();
+        await GetReplay();
         SetFade();
-        OverlayOff();
         SetTarget(replay.target);
+    }
+}
+async function GetReplay() {
+    try {
+        OverlayOn();
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const id = urlParams.get("id");
+
+        const response = await fetch("/stats", {
+            method: "POST",
+            body: JSON.stringify({
+                id: id,
+            }),
+            headers: {
+                "Content-Type": "application/json; charset=UTF-8",
+            },
+        });
+        if (response.ok) {
+            replay = await response.json();
+            OverlayOff();
+        }
+    } catch (error) {
+        console.error(error.message);
     }
 }
 
@@ -110,15 +126,23 @@ function ReplayLoop(startTime) {
 
 async function GetTarget(wordCount = 10) {
     try {
+        OverlayOn();
         RemoveFade();
-        const response = await fetch(`/random?length=${wordCount}`);
-        if (!response.ok) {
-            throw new Error(`Response status: ${response.status}`);
+        const response = await fetch("/sentence", {
+            method: "POST",
+            body: JSON.stringify({
+                length: wordCount,
+            }),
+            headers: {
+                "Content-Type": "application/json; charset=UTF-8",
+            },
+        });
+        if (response.ok) {
+            SetFade();
+            const text = await response.text();
+            SetTarget(text);
+            OverlayOff();
         }
-        SetFade();
-        OverlayOff();
-        const text = await response.text();
-        SetTarget(text);
     } catch (error) {
         console.error(error.message);
     }
@@ -252,26 +276,3 @@ function RemoveSelected() {
     words40.classList.remove("selected");
     words50.classList.remove("selected");
 }
-
-function OverlayOn() {
-    overlay.classList.add("d-flex");
-    overlay.classList.remove("d-none");
-}
-
-function OverlayOff() {
-    overlay.classList.remove("d-flex");
-    overlay.classList.add("d-none");
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    setInterval(() => {
-        loadingDots++;
-        loadingDots = loadingDots % 3;
-        let text = "Loading";
-        for (let i = 0; i <= loadingDots; i++) {
-            text += ".";
-        }
-        loading.innerText = text;
-    }, 500);
-    OverlayOff();
-});

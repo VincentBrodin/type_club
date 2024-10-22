@@ -11,18 +11,23 @@
     </div>
 
     <div class="d-flex flex-row">
-        <a class="mx-2" href="/">Save</a>
+        {{ if .LoggedIn }}
+        <a id="save" class="mx-2" href="/">Save</a>
         <p>|</p>
+        {{ end }}
         <a class="mx-2" href="/?id=last">Repeat</a>
         <p>|</p>
         <a class="mx-2" href="/"> New Test</a>
+        {{ if .LoggedIn }}
         <p>|</p>
         <a class="mx-2" href="/">Share</a>
+        {{ end }}
     </div>
 
     <h3 id="ghostCaret" class="position-absolute">|</h3>
 </div>
 <script src="/js/replay.js"></script>
+<script src="/js/stats.js"></script>
 <script>
     let textToHtml = document.getElementById("output");
     textToHtml.innerHTML = textToHtml.innerText

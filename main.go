@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"strconv"
-	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 
@@ -46,15 +44,16 @@ func main() {
 
 	//Static
 	app.Static("/js/", "./src/js/", fiber.Static{
-		CacheDuration: 10 * time.Millisecond,
+		CacheDuration: 0,
+		Browse:        true,
 	})
 	app.Static("/images/", "./src/images/")
 
 	//Routs
 	app.Get("/", GetHome)
 	app.Get("/stats/:id?", GetStats)
-	app.Get("/replay/:id?", GetReplay)
-	app.Get("/random/:length?", GetRandom)
+	app.Post("/stats", PostStats)
+	app.Post("/sentence", PostSentence)
 
 	app.Get("/account", GetAccount)
 
@@ -68,8 +67,10 @@ func main() {
 
 	app.Post("/validate", PostValidateAccount)
 	app.Post("/update", PostUpdate)
+	app.Post("/check", PostCheck)
 
 	app.Post("/done", PostDone)
+	app.Post("/save", PostSave)
 
 	log.Fatal(app.Listen(":3000"))
 }
@@ -107,32 +108,40 @@ func GetStats(c *fiber.Ctx) error {
 	return c.SendString(id)
 }
 
-func GetReplay(c *fiber.Ctx) error {
+func PostStats(c *fiber.Ctx) error {
 	sess, err := store.Get(c)
 	if err != nil {
 		return c.SendStatus(400)
 	}
 
-	id := c.Query("id")
-	// if the last run was not to be saved
-	if id == "last" {
-		body := fmt.Sprintf("%v", sess.Get("last"))
-		if body == "<nil>" {
-			return c.SendStatus(404)
-		}
-		return c.SendString(body)
-	}
-	return c.SendString(id)
-}
+	input := &struct {
+		Id string `json:"id"`
+	}{}
 
-func GetRandom(c *fiber.Ctx) error {
-	param := c.Query("length")
-	length, err := strconv.Atoi(param)
+	err = c.BodyParser(input)
 	if err != nil {
 		return c.SendStatus(400)
 	}
 
-	output := textgen.GenerateSentence(modal, length, "")
+	if input.Id == "last" {
+		body := fmt.Sprintf("%v", sess.Get("last"))
+		return c.SendString(body)
+	}
+	return c.SendString(input.Id)
+}
+
+func PostSentence(c *fiber.Ctx) error {
+	input := &struct {
+		Start  string `json:"start"`
+		Length int    `json:"length"`
+	}{}
+
+	err := c.BodyParser(input)
+	if err != nil {
+		return c.SendStatus(400)
+	}
+
+	output := textgen.GenerateSentence(modal, input.Length, input.Start)
 	return c.SendString(output)
 }
 
@@ -331,6 +340,7 @@ func PostUpdate(c *fiber.Ctx) error {
 	input := &struct {
 		Username string `json:"username"`
 		Email    string `json:"email"`
+		Password string `json:"password"`
 	}{}
 
 	err := c.BodyParser(input)
@@ -355,6 +365,13 @@ func PostUpdate(c *fiber.Ctx) error {
 		}
 		user.Email = input.Email
 	}
+	if input.Password != "" {
+		hash, err := pswdhash.HashPassword(input.Password)
+		if err != nil {
+			return c.SendStatus(400)
+		}
+		user.Password = hash
+	}
 
 	err = user.Update(db)
 	if err != nil {
@@ -367,6 +384,39 @@ func PostUpdate(c *fiber.Ctx) error {
 	}
 
 	return c.SendStatus(200)
+}
+
+func PostCheck(c *fiber.Ctx) error {
+	input := &struct {
+		Password string `json:"password"`
+	}{}
+
+	err := c.BodyParser(input)
+	if err != nil {
+		return c.SendStatus(400)
+	}
+
+	user, err := getUserFromSess(c)
+	if err != nil {
+		return c.SendStatus(400)
+	}
+
+	valid := pswdhash.VerifyPassword(input.Password, user.Password)
+
+	output := struct {
+		Valid bool `json:"valid"`
+	}{
+		Valid: valid,
+	}
+
+	data, err := json.Marshal(output)
+	if err != nil {
+		fmt.Println(err)
+		return c.SendStatus(404)
+	}
+
+	return c.SendString(string(data))
+
 }
 
 func validEmail(email string) bool {
@@ -415,4 +465,8 @@ func PostDone(c *fiber.Ctx) error {
 	}
 
 	return c.Redirect("/stats?id=last")
+}
+
+func PostSave(c *fiber.Ctx) error {
+	return fmt.Errorf("Hello world")
 }

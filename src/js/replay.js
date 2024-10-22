@@ -6,15 +6,25 @@ let replay = null;
 
 async function GetReplay() {
     try {
+        OverlayOn();
         const queryString = window.location.search;
         const urlParams = new URLSearchParams(queryString);
         const id = urlParams.get("id");
-        const response = await fetch(`/replay?id=${id}`);
-        if (!response.ok) {
-            throw new Error(`Response status: ${response.status}`);
+
+        const response = await fetch("/stats", {
+            method: "POST",
+            body: JSON.stringify({
+                id: id,
+            }),
+            headers: {
+                "Content-Type": "application/json; charset=UTF-8",
+            },
+        });
+        if (response.ok) {
+            replay = await response.json();
+            StartReplay();
+            OverlayOff();
         }
-        replay = await response.json();
-        StartReplay();
     } catch (error) {
         console.error(error.message);
     }
@@ -44,4 +54,4 @@ function ReplayLoop(startTime) {
     }
 }
 
-GetReplay();
+document.addEventListener("DOMContentLoaded", GetReplay);

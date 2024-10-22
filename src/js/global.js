@@ -41,3 +41,32 @@ function SetCaret(c, t) {
     c.style.left = cursorRect.left - (cursorRect.width / 2) + "px";
     c.style.top = cursorRect.top + (cursorRect.height / 8) + "px";
 }
+
+let overlay = document.getElementById("overlay");
+let loading = document.getElementById("loading");
+let loadingDots = 1;
+
+function OverlayOn() {
+    overlay.classList.add("d-flex");
+    overlay.classList.remove("d-none");
+}
+
+function OverlayOff() {
+    overlay.classList.remove("d-flex");
+    overlay.classList.add("d-none");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    overlay = document.getElementById("overlay");
+    loading = document.getElementById("loading");
+    setInterval(() => {
+        loadingDots++;
+        loadingDots = loadingDots % 3;
+        let text = "Loading";
+        for (let i = 0; i <= loadingDots; i++) {
+            text += ".";
+        }
+        loading.innerText = text;
+    }, 500);
+    OverlayOff();
+});

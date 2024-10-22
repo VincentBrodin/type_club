@@ -1,3 +1,4 @@
+//Username
 const username = document.getElementById("username");
 username.addEventListener("input", UsernameChanged);
 let currentUsername = username.value;
@@ -9,6 +10,7 @@ updateUsername.addEventListener("click", UpdateUsername);
 const usernameTaken = document.getElementById("usernameTaken");
 usernameTaken.innerText = "";
 
+//Email
 const email = document.getElementById("email");
 email.addEventListener("input", EmailChanged);
 let currentEmail = email.value;
@@ -20,10 +22,19 @@ updateEmail.addEventListener("click", UpdateEmail);
 const emailTaken = document.getElementById("emailTaken");
 emailTaken.innerText = "";
 
-const overlay = document.getElementById("overlay");
-const loading = document.getElementById("loading");
-let loadingDots = 1;
-OverlayOn();
+//Password
+const currentPassword = document.getElementById("currentPassword");
+const correctPassword = document.getElementById("correctPassword");
+correctPassword.innerText = "";
+
+const newPassword = document.getElementById("newPassword");
+const repeatNewPassword = document.getElementById("repeatNewPassword");
+const updatePassword = document.getElementById("updatePassword");
+const passwordMatch = document.getElementsByClassName("matchPassword");
+for (let i = 0; i < passwordMatch.length; i++) {
+    passwordMatch[i].innerText = "";
+}
+updatePassword.addEventListener("click", UpdatePassword);
 
 async function UpdateUsername() {
     OverlayOn();
@@ -93,6 +104,56 @@ function EmailChanged() {
     updateEmail.disabled = email.value == currentEmail;
 }
 
+async function UpdatePassword() {
+    OverlayOn();
+    valid = await CheckPassword(currentPassword.value);
+
+    if (!valid) {
+        currentPassword.classList.add("border");
+        currentPassword.classList.add("border-danger");
+        correctPassword.innerText = "Wrong password";
+        OverlayOff();
+        return;
+    } else {
+        currentPassword.classList.remove("border");
+        currentPassword.classList.remove("border-danger");
+        correctPassword.innerText = "";
+    }
+
+    if (newPassword.value != repeatNewPassword.value) {
+        newPassword.classList.add("border");
+        newPassword.classList.add("border-danger");
+        repeatNewPassword.classList.add("border");
+        repeatNewPassword.classList.add("border-danger");
+
+        for (let i = 0; i < passwordMatch.length; i++) {
+            passwordMatch[i].innerText = "Password must match";
+        }
+
+        OverlayOff();
+        return;
+    }
+    newPassword.classList.remove("border");
+    newPassword.classList.remove("border-danger");
+    repeatNewPassword.classList.remove("border");
+    repeatNewPassword.classList.remove("border-danger");
+
+    for (let i = 0; i < passwordMatch.length; i++) {
+        passwordMatch[i].innerText = "";
+    }
+
+    const data = {
+        password: newPassword.value,
+    };
+    const update = await Update(data);
+    if (update) {
+        currentPassword.value = "";
+        newPassword.value = "";
+        repeatNewPassword.value = "";
+    }
+    OverlayOff();
+}
+
 async function Update(data) {
     try {
         const response = await fetch("/update", {
@@ -136,25 +197,25 @@ async function Validate(data) {
     }
 }
 
-function OverlayOn() {
-    overlay.classList.add("d-flex");
-    overlay.classList.remove("d-none");
-}
+async function CheckPassword(password) {
+    try {
+        const response = await fetch("/check", {
+            method: "POST",
+            body: JSON.stringify({
+                password: password,
+            }),
+            headers: {
+                "Content-Type": "application/json; charset=UTF-8",
+            },
+        });
 
-function OverlayOff() {
-    overlay.classList.remove("d-flex");
-    overlay.classList.add("d-none");
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    setInterval(() => {
-        loadingDots++;
-        loadingDots = loadingDots % 3;
-        let text = "Loading";
-        for (let i = 0; i <= loadingDots; i++) {
-            text += ".";
+        if (response.ok) {
+            json = await response.json();
+            return json.valid;
         }
-        loading.innerText = text;
-    }, 500);
-    OverlayOff();
-});
+        return false;
+    } catch (error) {
+        console.error(error.message);
+        return false;
+    }
+}
