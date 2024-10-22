@@ -1,3 +1,10 @@
+
+-- Drop tables if they exist
+DROP TABLE IF EXISTS run_inputs;
+DROP TABLE IF EXISTS runs;
+DROP TABLE IF EXISTS users;
+
+-- Recreate tables
 CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL UNIQUE,
@@ -5,9 +12,9 @@ CREATE TABLE users (
     password TEXT NOT NULL
 );
 
-
 CREATE TABLE runs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    owner_id INTEGER,
     target TEXT NOT NULL,
     html TEXT,
     accuracy REAL,
@@ -23,3 +30,4 @@ CREATE TABLE run_inputs (
     time REAL,
     FOREIGN KEY (run_id) REFERENCES runs(id) ON DELETE CASCADE
 );
+

@@ -14,6 +14,7 @@ type RunInputs struct {
 
 type TypeRun struct {
 	Id       int64       `json:"id"`
+	OwnerId  int64       `json:"ownerId"`
 	Target   string      `json:"target"`
 	Html     string      `json:"html"`
 	Accuracy float64     `json:"accuracy"`
@@ -41,7 +42,7 @@ func (t *TypeRun) Clean() TypeRun {
 }
 
 func (t *TypeRun) AddToDb(db *sql.DB) error {
-	prompt := "INSERT INTO runs (target, html, accuracy, wpm, awpm, time) VALUES (?, ?, ?, ?, ?, ?)"
+	prompt := "INSERT INTO runs (owner_id, target, html, accuracy, wpm, awpm, time) VALUES (?, ?, ?, ?, ?, ?, ?)"
 	statement, err := db.Prepare(prompt)
 	if err != nil {
 		return err
@@ -49,7 +50,7 @@ func (t *TypeRun) AddToDb(db *sql.DB) error {
 	defer statement.Close()
 
 	//Execute statement
-	result, err := statement.Exec(t.Target, t.Html, t.Accuracy, t.Wpm, t.Awpm, t.Time)
+	result, err := statement.Exec(t.OwnerId, t.Target, t.Html, t.Accuracy, t.Wpm, t.Awpm, t.Time)
 	if err != nil {
 		return err
 	}
@@ -95,15 +96,15 @@ func AddInputsToDb(inputs []RunInputs, db *sql.DB) error {
 
 func FindById(id int64, db *sql.DB) (*TypeRun, error) {
 	// Query for the TypeRun by id
-	runQuery := "SELECT id, target, html, accuracy, wpm, awpm, time FROM runs WHERE id = ?"
+	runQuery := "SELECT * FROM runs WHERE id = ?"
 	run := &TypeRun{}
-	err := db.QueryRow(runQuery, id).Scan(&run.Id, &run.Target, &run.Html, &run.Accuracy, &run.Wpm, &run.Awpm, &run.Time)
+	err := db.QueryRow(runQuery, id).Scan(&run.Id, &run.OwnerId, &run.Target, &run.Html, &run.Accuracy, &run.Wpm, &run.Awpm, &run.Time)
 	if err != nil {
 		return nil, err
 	}
 
 	// Query for the related RunInputs
-	inputsQuery := "SELECT id, run_id, value, time FROM run_inputs WHERE run_id = ?"
+	inputsQuery := "SELECT * FROM run_inputs WHERE run_id = ?"
 	rows, err := db.Query(inputsQuery, id)
 	if err != nil {
 		return nil, err

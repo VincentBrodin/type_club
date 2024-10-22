@@ -68,18 +68,15 @@ async function OnLoaded() {
     } else {
         ghost = true;
         RemoveFade();
-        await GetReplay();
+        console.log(id);
+        await GetReplay(id);
         SetFade();
         SetTarget(replay.target);
     }
 }
-async function GetReplay() {
+async function GetReplay(id) {
     try {
         OverlayOn();
-        const queryString = window.location.search;
-        const urlParams = new URLSearchParams(queryString);
-        const id = urlParams.get("id");
-
         const response = await fetch("/stats", {
             method: "POST",
             body: JSON.stringify({

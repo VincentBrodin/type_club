@@ -57,6 +57,7 @@ func main() {
 	app.Post("/sentence", PostSentence)
 
 	app.Get("/account", GetAccount)
+	app.Get("/profile/:id?", GetProfile)
 
 	app.Get("/login", GetLogin)
 	app.Post("/login", PostLogin)
@@ -162,7 +163,6 @@ func PostStats(c *fiber.Ctx) error {
 			return c.SendStatus(400)
 		}
 
-		fmt.Println(string(body))
 		return c.SendString(string(body))
 	}
 }
@@ -197,6 +197,24 @@ func GetAccount(c *fiber.Ctx) error {
 		"LoggedIn": loggedIn(c),
 		"User":     *user,
 	}, "layouts/main")
+}
+
+func GetProfile(c *fiber.Ctx) error {
+	if !loggedIn(c) {
+		return c.Redirect("/login")
+	}
+
+	user, err := getUserFromSess(c)
+	if err != nil {
+		return c.Redirect("/login")
+	}
+
+	return c.Render("profile", fiber.Map{
+		"Title":    fmt.Sprintf("type_club | %v", user.Username),
+		"LoggedIn": loggedIn(c),
+		"User":     *user,
+	}, "layouts/main")
+
 }
 
 func loggedIn(c *fiber.Ctx) bool {
@@ -505,6 +523,10 @@ func PostDone(c *fiber.Ctx) error {
 }
 
 func PostSave(c *fiber.Ctx) error {
+	if !loggedIn(c) {
+		return c.SendStatus(400)
+	}
+
 	sess, err := store.Get(c)
 	if err != nil {
 		return c.SendStatus(400)
@@ -514,9 +536,14 @@ func PostSave(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 
-	body := []byte(fmt.Sprintf("%v", sess.Get("last")))
+	user, err := getUserFromSess(c)
+	if err != nil {
+		return c.SendStatus(400)
+	}
 
+	body := []byte(fmt.Sprintf("%v", sess.Get("last")))
 	typerun := typeruns.NewTypeRun()
+	typerun.OwnerId = user.Id
 
 	if err := json.Unmarshal(body, typerun); err != nil {
 		return c.SendStatus(400)

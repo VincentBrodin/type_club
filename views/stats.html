@@ -14,15 +14,15 @@
 
         <div class="d-flex flex-row">
             {{ if .LoggedIn }}
-            {{ if not .Last }}
+            {{ if .Last }}
             <a id="save" class="mx-2" href="/">Save</a>
             <p>|</p>
             {{ end }}
             {{ end }}
-            <a class="mx-2" href="/?id=last">Repeat</a>
+            <a id="repeat" class="mx-2" href="/">Repeat</a>
             <p>|</p>
             <a class="mx-2" href="/">New Test</a>
-            {{ if .LoggedIn }}
+            {{ if .Owner }}
             {{ if not .Last }}
             <p>|</p>
             <a class="mx-2" href="/">Share</a>

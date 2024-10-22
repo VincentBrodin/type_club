@@ -1,5 +1,10 @@
 const save = document.getElementById("save");
-save.addEventListener("click", Save);
+if (save != null) {
+    save.addEventListener("click", Save);
+}
+
+const repeat = document.getElementById("repeat");
+repeat.addEventListener("click", Repeat);
 
 async function Save(event) {
     event.preventDefault();
@@ -18,4 +23,13 @@ async function Save(event) {
     } catch (error) {
         console.error(error.message);
     }
+}
+
+function Repeat(event) {
+    event.preventDefault();
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const id = urlParams.get("id");
+    console.log(id);
+    window.location.href = `/?id=${id}`;
 }
