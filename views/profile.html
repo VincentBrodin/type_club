@@ -1,0 +1,67 @@
+<div class="d-flex flex-column" style="min-width: 25vw; max-width: 50vw;">
+    <div class="card mb-4">
+        <div class="card-body">
+            <h4 class="card-title">{{ .User.Username }}</h4>
+            <p><strong>Average WPM:</strong> {{ .Stats.Awpm }}</p>
+            <p><strong>Average Raw WPM:</strong> {{ .Stats.Wpm }}</p>
+            <p><strong>Average Accuracy:</strong> {{ .Stats.Accuracy }}%</p>
+        </div>
+    </div>
+    <hr>
+
+    <!-- Iterate through each run -->
+    {{ range $run := .Runs }}
+    <div class="card mb-3">
+        <div class="card-body">
+            <!-- Run details -->
+            <p class="card-text"><strong>Target:</strong> {{ $run.Target }}</p>
+
+            <p class="card-text">
+                <strong>Accuracy:</strong>
+                <span class="{{ if gt $run.Accuracy $.Stats.Accuracy }}green{{ else }}red{{ end }}">
+                    {{ $run.Accuracy }}%
+                    {{ if gt $run.Accuracy $.Stats.Accuracy }}
+                    <i class="fa-solid fa-arrow-up"></i>
+                    {{ else }}
+                    <i class="fa-solid fa-arrow-down"></i>
+                    {{ end }}
+                </span>
+            </p>
+
+            <p class="card-text">
+                <strong>WPM:</strong>
+                <span class="{{ if gt $run.Awpm $.Stats.Awpm }}green{{ else }}red{{ end }}">
+                    {{ $run.Awpm }}
+                    {{ if gt $run.Awpm $.Stats.Awpm }}
+                    <i class="fa-solid fa-arrow-up"></i>
+                    {{ else }}
+                    <i class="fa-solid fa-arrow-down"></i>
+                    {{ end }}
+                </span>
+            </p>
+
+            <p class="card-text">
+                <strong>Raw WPM:</strong>
+                <span class="{{ if gt $run.Wpm $.Stats.Wpm }}green{{ else }}red{{ end }}">
+                    {{ $run.Wpm }}
+                    {{ if gt $run.Wpm $.Stats.Wpm }}
+                    <i class="fa-solid fa-arrow-up"></i>
+                    {{ else }}
+                    <i class="fa-solid fa-arrow-down"></i>
+                    {{ end }}
+                </span>
+            </p>
+
+            <!-- Time -->
+            <p class="card-text"><strong>Time:</strong> {{ $run.Time }} seconds</p>
+
+            <!-- Try link -->
+            <div class="d-flex flex-row">
+                <a class="me-2" href="/?id={{ $run.Id }}">Try</a>
+                <p class="me-2">|</p>
+                <a class="me-2" href="stats/?id={{ $run.Id }}">Stats</a>
+            </div>
+        </div>
+    </div>
+    {{ end }}
+</div>

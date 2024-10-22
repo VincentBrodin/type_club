@@ -1,9 +1,9 @@
 <div class="d-flex flex-column align-items-center" style="width: 75vw;">
     <span id="output">{{.TypeRun.Html}}</span>
     <div class="d-flex flex-row">
-        <h5 class="mx-2">Real Wpm: {{.TypeRun.Wpm}}</h5>
+        <h5 class="mx-2">Wpm: {{.TypeRun.Awpm}}</h5>
         <h5>|</h5>
-        <h5 class="mx-2">Avrage Wpm: {{.TypeRun.Awpm}}</h5>
+        <h5 class="mx-2">Raw Wpm: {{.TypeRun.Wpm}}</h5>
         <h5>|</h5>
         <h5 class="mx-2">Accuracy: {{.TypeRun.Accuracy}}%</h5>
         <h5>|</h5>
@@ -28,6 +28,11 @@
             <a class="mx-2" href="/">Share</a>
             {{ end }}
             {{ end }}
+            {{ if not .Last }}
+            <p>|</p>
+            <a class="mx-2" href="/profile?id={{ .TypeRun.OwnerId }}">Profile</a>
+            {{ end }}
+
         </div>
     </div>
 

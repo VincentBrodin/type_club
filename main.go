@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"sort"
 	"strconv"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -52,12 +53,12 @@ func main() {
 
 	//Routs
 	app.Get("/", GetHome)
-	app.Get("/stats/:id?", GetStats)
+	app.Get("/stats:id?", GetStats)
 	app.Post("/stats", PostStats)
 	app.Post("/sentence", PostSentence)
 
 	app.Get("/account", GetAccount)
-	app.Get("/profile/:id?", GetProfile)
+	app.Get("/profile:id?", GetProfile)
 
 	app.Get("/login", GetLogin)
 	app.Post("/login", PostLogin)
@@ -200,19 +201,39 @@ func GetAccount(c *fiber.Ctx) error {
 }
 
 func GetProfile(c *fiber.Ctx) error {
-	if !loggedIn(c) {
-		return c.Redirect("/login")
+	id := int64(c.QueryInt("id", -1))
+	if id == -1 {
+		if loggedIn(c) {
+			localUser, err := getUserFromSess(c)
+			if err != nil {
+				return c.SendStatus(404)
+			}
+
+			id = localUser.Id
+		} else {
+			return c.Redirect("/login")
+		}
 	}
 
-	user, err := getUserFromSess(c)
+	user, err := users.FindById(id, db)
 	if err != nil {
-		return c.Redirect("/login")
+		return c.SendStatus(404)
 	}
+
+	runs, err := typeruns.FindByOwner(user.Id, 10, db)
+	if err != nil {
+		return c.SendStatus(404)
+	}
+	sort.Slice(runs, func(i, j int) bool {
+		return runs[i].Id > runs[j].Id
+	})
 
 	return c.Render("profile", fiber.Map{
 		"Title":    fmt.Sprintf("type_club | %v", user.Username),
 		"LoggedIn": loggedIn(c),
-		"User":     *user,
+		"User":     user,
+		"Stats":    typeruns.CalculateStats(runs),
+		"Runs":     runs,
 	}, "layouts/main")
 
 }

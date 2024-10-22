@@ -24,6 +24,12 @@ type TypeRun struct {
 	Inputs   []RunInputs `json:"inputs"`
 }
 
+type ProfileStats struct {
+	Awpm     float64 `json:"awpm"`
+	Wpm      float64 `json:"wpm"`
+	Accuracy float64 `json:"accuracy"`
+}
+
 func NewTypeRun() *TypeRun {
 	return &TypeRun{
 		Id: -1,
@@ -97,7 +103,7 @@ func AddInputsToDb(inputs []RunInputs, db *sql.DB) error {
 func FindById(id int64, db *sql.DB) (*TypeRun, error) {
 	// Query for the TypeRun by id
 	runQuery := "SELECT * FROM runs WHERE id = ?"
-	run := &TypeRun{}
+	run := NewTypeRun()
 	err := db.QueryRow(runQuery, id).Scan(&run.Id, &run.OwnerId, &run.Target, &run.Html, &run.Accuracy, &run.Wpm, &run.Awpm, &run.Time)
 	if err != nil {
 		return nil, err
@@ -127,4 +133,135 @@ func FindById(id int64, db *sql.DB) (*TypeRun, error) {
 	}
 
 	return run, nil
+}
+
+func FindByOwner(ownerId int64, count int, db *sql.DB) ([]TypeRun, error) {
+	// Query for all runs by owner id
+	runQuery := "SELECT * FROM runs WHERE owner_id = ? ORDER BY id DESC LIMIT ?"
+	rows, err := db.Query(runQuery, ownerId, count)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Slice to hold all runs for the owner
+	var runs []TypeRun
+
+	// Iterate over each row in the result set (each run)
+	for rows.Next() {
+		run := NewTypeRun()
+		err := rows.Scan(&run.Id, &run.OwnerId, &run.Target, &run.Html, &run.Accuracy, &run.Wpm, &run.Awpm, &run.Time)
+		if err != nil {
+			return nil, err
+		}
+
+		// Query for the related RunInputs for each run
+		inputsQuery := "SELECT * FROM run_inputs WHERE run_id = ?"
+		inputRows, err := db.Query(inputsQuery, run.Id)
+		if err != nil {
+			return nil, err
+		}
+		defer inputRows.Close()
+
+		// Populate the Inputs field of the TypeRun
+		for inputRows.Next() {
+			var input RunInputs
+			err := inputRows.Scan(&input.Id, &input.RunId, &input.Value, &input.Time)
+			if err != nil {
+				return nil, err
+			}
+			run.Inputs = append(run.Inputs, input)
+		}
+
+		// Check for errors in scanning inputs
+		if err = inputRows.Err(); err != nil {
+			return nil, err
+		}
+
+		// Add the run to the list of runs
+		runs = append(runs, run.Clean())
+	}
+
+	// Check for errors after reading all rows for runs
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return runs, nil
+}
+
+func FindBest(count int, db *sql.DB) ([]TypeRun, error) {
+	// Query for the best runs ordered by AWPM
+	runQuery := "SELECT * FROM runs ORDER BY awpm DESC LIMIT ?"
+
+	rows, err := db.Query(runQuery, count)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var runs []TypeRun
+
+	// Iterate over each row in the result set (each run)
+	for rows.Next() {
+		run := NewTypeRun()
+		err := rows.Scan(&run.Id, &run.OwnerId, &run.Target, &run.Html, &run.Accuracy, &run.Wpm, &run.Awpm, &run.Time)
+		if err != nil {
+			return nil, err
+		}
+
+		// Query for the related RunInputs for each run
+		inputsQuery := "SELECT * FROM run_inputs WHERE run_id = ?"
+		inputRows, err := db.Query(inputsQuery, run.Id)
+		if err != nil {
+			return nil, err
+		}
+		defer inputRows.Close()
+
+		// Populate the Inputs field of the TypeRun
+		for inputRows.Next() {
+			var input RunInputs
+			err := inputRows.Scan(&input.Id, &input.RunId, &input.Value, &input.Time)
+			if err != nil {
+				return nil, err
+			}
+			run.Inputs = append(run.Inputs, input)
+		}
+
+		// Check for errors in scanning inputs
+		if err = inputRows.Err(); err != nil {
+			return nil, err
+		}
+
+		// Add the run to the list of best runs
+		runs = append(runs, run.Clean())
+	}
+
+	// Check for errors after reading all rows for runs
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return runs, nil
+}
+
+func CalculateStats(runs []TypeRun) ProfileStats {
+	var awpm float64
+	var wpm float64
+	var accuracy float64
+	for _, run := range runs {
+		awpm += run.Awpm
+		wpm += run.Wpm
+		accuracy += run.Accuracy
+	}
+	count := float64(len(runs))
+	awpm /= count
+	wpm /= count
+	accuracy /= count
+
+	return ProfileStats{
+		Awpm:     math.Round(awpm*100) / 100,
+		Wpm:      math.Round(wpm*100) / 100,
+		Accuracy: math.Round(accuracy*100) / 100,
+	}
 }
