@@ -59,6 +59,7 @@ func main() {
 
 	app.Get("/account", GetAccount)
 	app.Get("/profile:id?", GetProfile)
+	app.Post("/profile", PostProfile)
 
 	app.Get("/login", GetLogin)
 	app.Post("/login", PostLogin)
@@ -209,13 +210,36 @@ func GetProfile(c *fiber.Ctx) error {
 				return c.SendStatus(404)
 			}
 
-			id = localUser.Id
+			return c.Redirect(fmt.Sprintf("/profile?id=%d", localUser.Id))
 		} else {
 			return c.Redirect("/login")
 		}
 	}
 
 	user, err := users.FindById(id, db)
+	if err != nil {
+		return c.SendStatus(404)
+	}
+
+	return c.Render("profile", fiber.Map{
+		"Title":    fmt.Sprintf("type_club | %v", user.Username),
+		"LoggedIn": loggedIn(c),
+		"User":     user,
+	}, "layouts/main")
+}
+
+func PostProfile(c *fiber.Ctx) error {
+	input := &struct {
+		Id int64 `json:"id"`
+	}{}
+	err := c.BodyParser(input)
+	if err != nil {
+		fmt.Println(err)
+		return c.SendStatus(400)
+	}
+
+	fmt.Println(input.Id)
+	user, err := users.FindById(input.Id, db)
 	if err != nil {
 		return c.SendStatus(404)
 	}
@@ -228,14 +252,30 @@ func GetProfile(c *fiber.Ctx) error {
 		return runs[i].Id > runs[j].Id
 	})
 
-	return c.Render("profile", fiber.Map{
-		"Title":    fmt.Sprintf("type_club | %v", user.Username),
-		"LoggedIn": loggedIn(c),
-		"User":     user,
-		"Stats":    typeruns.CalculateStats(runs),
-		"Runs":     runs,
-	}, "layouts/main")
+	output := struct {
+		User  users.User            `json:"user"`
+		Runs  []typeruns.TypeRun    `json:"runs"`
+		Stats typeruns.ProfileStats `json:"stats"`
+	}{
+		User:  *user,
+		Runs:  runs,
+		Stats: typeruns.CalculateStats(runs),
+	}
 
+	data, err := json.Marshal(output)
+	if err != nil {
+		fmt.Println(err)
+		return c.SendStatus(404)
+	}
+
+	return c.SendString(string(data))
+}
+
+func GetLeaderboard(c *fiber.Ctx) error {
+	return c.Render("leaderboard", fiber.Map{
+		"Title":    "type_club | Account",
+		"LoggedIn": loggedIn(c),
+	}, "layouts/main")
 }
 
 func loggedIn(c *fiber.Ctx) bool {

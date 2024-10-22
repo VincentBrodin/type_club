@@ -1,10 +1,10 @@
-<div class="d-flex flex-column" style="min-width: 25vw; max-width: 50vw;">
+<div id="body" class="d-flex flex-column" style="min-width: 25vw; max-width: 50vw;">
     <div class="card mb-4">
         <div class="card-body">
             <h4 class="card-title">{{ .User.Username }}</h4>
-            <p><strong>Average WPM:</strong> {{ .Stats.Awpm }}</p>
-            <p><strong>Average Raw WPM:</strong> {{ .Stats.Wpm }}</p>
-            <p><strong>Average Accuracy:</strong> {{ .Stats.Accuracy }}%</p>
+            <p><strong>Average WPM:</strong><span id="awpm">{{ .Stats.Awpm }} </span></p>
+            <p><strong>Average Raw WPM:</strong><span id="wpm"> {{ .Stats.Wpm }} </span></p>
+            <p><strong>Average Accuracy:</strong><span id="accuracy">{{ .Stats.Accuracy }}% </span> </p>
         </div>
     </div>
     <hr>
@@ -65,3 +65,5 @@
     </div>
     {{ end }}
 </div>
+
+<script src="/js/profile.js"></script>
