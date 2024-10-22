@@ -89,20 +89,20 @@ func GetStats(c *fiber.Ctx) error {
 	}
 
 	id := c.Query("id")
-	payload := typeruns.NewTypeRun()
+	typerun := typeruns.NewTypeRun()
 
 	// if the last run was not to be saved
 	if id == "last" {
 		body := fmt.Sprintf("%v", sess.Get("last"))
 
 		b := []byte(body)
-		if err := json.Unmarshal(b, &payload); err != nil {
+		if err := json.Unmarshal(b, &typerun); err != nil {
 			return c.Redirect("/")
 		}
 		return c.Render("stats", fiber.Map{
 			"Title":    "type_club | Stats",
 			"LoggedIn": loggedIn(c),
-			"TypeRun":  typeruns.Clean(payload),
+			"TypeRun":  typerun.Clean(),
 		}, "layouts/main")
 	}
 	return c.SendString(id)
@@ -448,8 +448,8 @@ func PostDone(c *fiber.Ctx) error {
 		return c.SendStatus(400)
 	}
 
-	payload := typeruns.NewTypeRun()
-	if err := c.BodyParser(&payload); err != nil {
+	typerun := typeruns.NewTypeRun()
+	if err := c.BodyParser(typerun); err != nil {
 		fmt.Println(err)
 		return c.SendStatus(400)
 	}
@@ -468,5 +468,27 @@ func PostDone(c *fiber.Ctx) error {
 }
 
 func PostSave(c *fiber.Ctx) error {
-	return fmt.Errorf("Hello world")
+	sess, err := store.Get(c)
+	if err != nil {
+		return c.SendStatus(400)
+	}
+
+	if sess.Get("last") == nil {
+		return c.SendStatus(400)
+	}
+
+	body := []byte(fmt.Sprintf("%v", sess.Get("last")))
+
+	typerun := typeruns.NewTypeRun()
+
+	if err := json.Unmarshal(body, typerun); err != nil {
+		return c.SendStatus(400)
+	}
+
+	err = typerun.AddToDb(db)
+	if err != nil {
+		return c.SendStatus(400)
+	}
+
+	return c.SendStatus(200)
 }

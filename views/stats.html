@@ -27,7 +27,9 @@
     <h3 id="ghostCaret" class="position-absolute">|</h3>
 </div>
 <script src="/js/replay.js"></script>
+{{ if .LoggedIn }}
 <script src="/js/stats.js"></script>
+{{ end }}
 <script>
     let textToHtml = document.getElementById("output");
     textToHtml.innerHTML = textToHtml.innerText
