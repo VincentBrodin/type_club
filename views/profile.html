@@ -1,4 +1,4 @@
-<div id="body" class="d-flex flex-column" style="min-width: 25vw; max-width: 50vw;">
+<div class="d-flex flex-column" style="min-width: 25vw; max-width: 50vw;">
     <div class="card mb-4">
         <div class="card-body">
             <h4 class="card-title">{{ .User.Username }}</h4>
@@ -8,62 +8,26 @@
         </div>
     </div>
     <hr>
+    <form class="d-flex flex-row mb-4 align-items-center justify-content-even">
 
-    <!-- Iterate through each run -->
-    {{ range $run := .Runs }}
-    <div class="card mb-3">
-        <div class="card-body">
-            <!-- Run details -->
-            <p class="card-text"><strong>Target:</strong> {{ $run.Target }}</p>
+        <select class="form-select me-2" id="type">
+            <option value="id">Age</option>
+            <option value="awpm">WPM</option>
+            <option value="wpm">Raw WPM</option>
+            <option value="accuracy">Accuracy</option>
+        </select>
 
-            <p class="card-text">
-                <strong>Accuracy:</strong>
-                <span class="{{ if gt $run.Accuracy $.Stats.Accuracy }}green{{ else }}red{{ end }}">
-                    {{ $run.Accuracy }}%
-                    {{ if gt $run.Accuracy $.Stats.Accuracy }}
-                    <i class="fa-solid fa-arrow-up"></i>
-                    {{ else }}
-                    <i class="fa-solid fa-arrow-down"></i>
-                    {{ end }}
-                </span>
-            </p>
 
-            <p class="card-text">
-                <strong>WPM:</strong>
-                <span class="{{ if gt $run.Awpm $.Stats.Awpm }}green{{ else }}red{{ end }}">
-                    {{ $run.Awpm }}
-                    {{ if gt $run.Awpm $.Stats.Awpm }}
-                    <i class="fa-solid fa-arrow-up"></i>
-                    {{ else }}
-                    <i class="fa-solid fa-arrow-down"></i>
-                    {{ end }}
-                </span>
-            </p>
+        <select class="form-select me-2" id="order">
+            <option value="desc">DESC</option>
+            <option value="asc">ASC</option>
+        </select>
 
-            <p class="card-text">
-                <strong>Raw WPM:</strong>
-                <span class="{{ if gt $run.Wpm $.Stats.Wpm }}green{{ else }}red{{ end }}">
-                    {{ $run.Wpm }}
-                    {{ if gt $run.Wpm $.Stats.Wpm }}
-                    <i class="fa-solid fa-arrow-up"></i>
-                    {{ else }}
-                    <i class="fa-solid fa-arrow-down"></i>
-                    {{ end }}
-                </span>
-            </p>
+        <input class="form-control" type="button" onclick="OnClick()" id="sort" value="Sort">
+    </form>
+    <div id="body">
 
-            <!-- Time -->
-            <p class="card-text"><strong>Time:</strong> {{ $run.Time }} seconds</p>
-
-            <!-- Try link -->
-            <div class="d-flex flex-row">
-                <a class="me-2" href="/?id={{ $run.Id }}">Try</a>
-                <p class="me-2">|</p>
-                <a class="me-2" href="stats/?id={{ $run.Id }}">Stats</a>
-            </div>
-        </div>
     </div>
-    {{ end }}
 </div>
 
 <script src="/js/profile.js"></script>

@@ -1,6 +1,10 @@
 document.addEventListener("DOMContentLoaded", OnLoaded);
-
+const sort = document.getElementById("sort");
+const type = document.getElementById("type");
+const order = document.getElementById("order");
+let json;
 async function OnLoaded() {
+    document.getElementById("sort").addEventListener("click", OnClick);
     try {
         OverlayOn();
         const queryString = window.location.search;
@@ -22,16 +26,37 @@ async function OnLoaded() {
             document.getElementById("awpm").innerText = json.stats.awpm;
             document.getElementById("wpm").innerText = json.stats.wpm;
             document.getElementById("accuracy").innerText = json.stats.accuracy;
+            render(json.runs, json.stats);
 
-            const body = document.getElementById("body");
-            for (let i = 0; i < json.runs.length; i++) {
-                const run = json.runs[i];
-                body.innerHTML += renderRunCard(run, json.stats);
-            }
             OverlayOff();
         }
     } catch (error) {
         console.error(error.message);
+    }
+}
+
+function OnClick() {
+    const sortType = type.value;
+    const sortOrder = order.value;
+
+    const sortedRuns = json.runs.sort((a, b) => {
+        if (sortOrder === "asc") {
+            return a[sortType] - b[sortType];
+        } else {
+            return b[sortType] - a[sortType];
+        }
+    });
+
+    const body = document.getElementById("body");
+    body.innerHTML = "";
+    render(sortedRuns, json.stats);
+}
+
+function render(runs, stats) {
+    const body = document.getElementById("body");
+    for (let i = 0; i < runs.length; i++) {
+        const run = runs[i];
+        body.innerHTML += renderRunCard(run, stats);
     }
 }
 
@@ -47,13 +72,7 @@ function renderRunCard(run, stats) {
         <div class="card-body">
             <!-- Run details -->
             <p class="card-text"><strong>Target:</strong> ${run.target}</p>
-            <p class="card-text">
-                <strong>Accuracy:</strong>
-                <span class="${getClass(run.accuracy, stats.accuracy)}">
-                    ${run.accuracy}%
-                    ${getIcon(run.accuracy, stats.accuracy)}
-                </span>
-            </p>
+        
             <p class="card-text">
                 <strong>WPM:</strong>
                 <span class="${getClass(run.awpm, stats.awpm)}">
@@ -66,6 +85,13 @@ function renderRunCard(run, stats) {
                 <span class="${getClass(run.wpm, stats.wpm)}">
                     ${run.wpm}
                     ${getIcon(run.wpm, stats.wpm)}
+                </span>
+            </p>
+            <p class="card-text">
+                <strong>Accuracy:</strong>
+                <span class="${getClass(run.accuracy, stats.accuracy)}">
+                    ${run.accuracy}%
+                    ${getIcon(run.accuracy, stats.accuracy)}
                 </span>
             </p>
             <!-- Time -->

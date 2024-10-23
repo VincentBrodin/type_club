@@ -25,6 +25,7 @@
             --red: #fb4943;
         }
 
+
         .green {
             color: var(--green);
         }
@@ -36,6 +37,20 @@
         .red {
             color: var(--red);
         }
+
+        .clean-dropdown {
+            border: solid 1px var(--yellow);
+            transition: 0.3 ease;
+        }
+
+        .clean-dropdown:hover {
+            border: solid 1px var(--red);
+        }
+
+        option:checked {
+            display: none;
+        }
+
 
         * {
             font-family: "Space Mono", monospace;
@@ -61,18 +76,21 @@
         }
 
         input[type="submit"],
-        input[type="button"] {
-            color: var(--yellow);
+        input[type="button"],
+        select {
+            color: var(--yellow) !important;
             transition: 0.3s ease;
         }
 
         input[type="submit"]:hover,
-        input[type="button"]:hover {
-            color: var(--red);
+        input[type="button"]:hover,
+        select:hover {
+            color: var(--red) !important;
         }
 
         input[type="submit"]:disabled,
-        input[type="button"]:disabled {
+        input[type="button"]:disabled,
+        select:disabled {
             color: grey;
             cursor: not-allowed;
             opacity: 0.6;

@@ -244,7 +244,7 @@ func PostProfile(c *fiber.Ctx) error {
 		return c.SendStatus(404)
 	}
 
-	runs, err := typeruns.FindByOwner(user.Id, 10, db)
+	runs, err := typeruns.FindByOwner(user.Id, db)
 	if err != nil {
 		return c.SendStatus(404)
 	}

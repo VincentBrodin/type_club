@@ -135,10 +135,10 @@ func FindById(id int64, db *sql.DB) (*TypeRun, error) {
 	return run, nil
 }
 
-func FindByOwner(ownerId int64, count int, db *sql.DB) ([]TypeRun, error) {
+func FindByOwner(ownerId int64, db *sql.DB) ([]TypeRun, error) {
 	// Query for all runs by owner id
-	runQuery := "SELECT * FROM runs WHERE owner_id = ? ORDER BY id DESC LIMIT ?"
-	rows, err := db.Query(runQuery, ownerId, count)
+	runQuery := "SELECT * FROM runs WHERE owner_id = ?"
+	rows, err := db.Query(runQuery, ownerId)
 	if err != nil {
 		return nil, err
 	}
