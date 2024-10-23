@@ -6,6 +6,9 @@ const ghostCaret = document.getElementById("ghostCaret");
 ghostCaret.innerText = "";
 let ghost = false;
 
+const repeat = document.getElementById("repeat");
+repeat.addEventListener("click", Repeat);
+
 const words10 = document.getElementById("words10");
 words10.addEventListener("click", () => {
     RemoveSelected();
@@ -272,4 +275,16 @@ function RemoveSelected() {
     words30.classList.remove("selected");
     words40.classList.remove("selected");
     words50.classList.remove("selected");
+}
+
+function Repeat(event) {
+    event.preventDefault();
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    let id = urlParams.get("id");
+    if (id == "") {
+        id = "last";
+    }
+    console.log(id);
+    window.location.href = `/?id=${id}`;
 }

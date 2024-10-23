@@ -70,3 +70,29 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 500);
     OverlayOff();
 });
+
+function Noti(from, message) {
+    const toastId = "toast-" + Date.now();
+
+    const toastHTML = `
+        <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <i class="fa-solid fa-bell me-2"></i>
+                <strong class="me-auto">${from}</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
+        </div>`;
+
+    document.getElementById("toastContainer").insertAdjacentHTML(
+        "beforeend",
+        toastHTML,
+    );
+
+    const toastElement = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastElement);
+
+    toast.show();
+}

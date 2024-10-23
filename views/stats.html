@@ -15,22 +15,18 @@
         <div class="d-flex flex-row">
             {{ if .LoggedIn }}
             {{ if .Last }}
-            <a id="save" class="mx-2" href="/">Save</a>
+            <a id="save" class="mx-2" href="/"><i class="fa-solid fa-floppy-disk"></i></a>
             <p>|</p>
             {{ end }}
             {{ end }}
-            <a id="repeat" class="mx-2" href="/">Repeat</a>
+            <a id="repeat" class="mx-2" href="/?id=last"><i class="fa-solid fa-repeat"></i></a>
             <p>|</p>
-            <a class="mx-2" href="/">New Test</a>
-            {{ if .Owner }}
+            <a class="mx-2" href="/"><i class="fa-solid fa-plus"></i></a>
             {{ if not .Last }}
             <p>|</p>
-            <a class="mx-2" href="/">Share</a>
-            {{ end }}
-            {{ end }}
-            {{ if not .Last }}
+            <a id="share" class="mx-2" href=""><i class="fa-solid fa-share"></i></a>
             <p>|</p>
-            <a class="mx-2" href="/profile?id={{ .TypeRun.OwnerId }}">Profile</a>
+            <a class="mx-2" href="/profile?id={{ .TypeRun.OwnerId }}"><i class="fa-solid fa-user"></i></a>
             {{ end }}
 
         </div>
@@ -38,10 +34,9 @@
 
     <h3 id="ghostCaret" class="position-absolute">|</h3>
 </div>
+
 <script src="/js/replay.js"></script>
-{{ if .LoggedIn }}
 <script src="/js/stats.js"></script>
-{{ end }}
 <script>
     let textToHtml = document.getElementById("output");
     textToHtml.innerHTML = textToHtml.innerText

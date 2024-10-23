@@ -6,6 +6,11 @@ if (save != null) {
 const repeat = document.getElementById("repeat");
 repeat.addEventListener("click", Repeat);
 
+const share = document.getElementById("share");
+if (share != null) {
+    share.addEventListener("click", Share);
+}
+
 async function Save(event) {
     event.preventDefault();
     try {
@@ -29,7 +34,17 @@ function Repeat(event) {
     event.preventDefault();
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
-    const id = urlParams.get("id");
+    let id = urlParams.get("id");
+    if (id == "") {
+        id = "last";
+    }
     console.log(id);
     window.location.href = `/?id=${id}`;
+}
+
+function Share(event) {
+    event.preventDefault();
+    const path = window.location.toString();
+    navigator.clipboard.writeText(path);
+    Noti("type_club", "Saved to clipboard");
 }

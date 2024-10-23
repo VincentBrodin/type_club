@@ -56,6 +56,11 @@ async function UpdateUsername() {
     }
     const update = await Update(data);
     if (update) {
+        Noti(
+            "type_club",
+            `Updated your username from ${currentUsername} to ${username.value}.`,
+        );
+
         currentUsername = username.value;
     } else {
         username.value = currentUsername;
@@ -91,6 +96,10 @@ async function UpdateEmail() {
 
     const update = await Update(data);
     if (update) {
+        Noti(
+            "type_club",
+            `Updated your email from ${currentEmail} to ${email.value}.`,
+        );
         currentEmail = email.value;
     } else {
         email.value = currentEmail;

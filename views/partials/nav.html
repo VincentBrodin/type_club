@@ -5,14 +5,22 @@
 
         <ul class="navbar-nav me-auto">
             <!--Right-->
+            <li class="nav-item">
+                <a class="nav-link" href="/login" tabindex="4">
+                    <i class="fa-solid fa-ranking-star"></i>
+                </a>
+            </li>
+
+
         </ul>
 
         <ul class="navbar-nav ms-auto">
             {{ if .LoggedIn}}
             <li class="nav-item dropdown">
-                <a class="nav-link" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown"
-                    aria-expanded="false">
-                    <img class="rounded-pill" src="/images/user.png" alt="Avatar Logo" style="width:40px;">
+                <a class="nav-link" href="#" tabindex="3" id="navbarDarkDropdownMenuLink" role="button"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    <!--<img class="rounded-pill" src="/images/user.png" alt="Avatar Logo" style="width:40px;">-->
+                    <i class="fa-solid fa-user"></i>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end"
                     aria-labelledby="navbarDarkDropdownMenuLink">
@@ -26,7 +34,7 @@
             </li>
             {{ else }}
             <li class="nav-item">
-                <a class="nav-link" href="/login">
+                <a class="nav-link" href="/login" tabindex="3">
                     Login
                 </a>
             </li>
