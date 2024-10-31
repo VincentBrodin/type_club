@@ -61,6 +61,9 @@ func main() {
 	app.Get("/profile:id?", GetProfile)
 	app.Post("/profile", PostProfile)
 
+	app.Get("/leaderboard", GetLeaderboard)
+	app.Post("/leaderboard", PostLeaderboard)
+
 	app.Get("/login", GetLogin)
 	app.Post("/login", PostLogin)
 
@@ -273,9 +276,43 @@ func PostProfile(c *fiber.Ctx) error {
 
 func GetLeaderboard(c *fiber.Ctx) error {
 	return c.Render("leaderboard", fiber.Map{
-		"Title":    "type_club | Account",
+		"Title":    "type_club | Leaderboard",
 		"LoggedIn": loggedIn(c),
 	}, "layouts/main")
+}
+
+func PostLeaderboard(c *fiber.Ctx) error {
+	runs, err := typeruns.FindBest(100, db)
+	if err != nil {
+		return c.SendStatus(404)
+	}
+	fmt.Println(runs)
+
+	type UserRun struct {
+		users.User       `json:"user"`
+		typeruns.TypeRun `json:"run"`
+	}
+
+	userRuns := make([]UserRun, 0)
+
+	for _, run := range runs {
+		user, err := users.FindById(run.OwnerId, db)
+		if err != nil {
+			continue
+		}
+
+		userRuns = append(userRuns, UserRun{
+			User:    *user,
+			TypeRun: run,
+		})
+	}
+
+	data, err := json.Marshal(userRuns)
+	if err != nil {
+		return c.SendStatus(404)
+	}
+
+	return c.SendString(string(data))
 }
 
 func loggedIn(c *fiber.Ctx) bool {

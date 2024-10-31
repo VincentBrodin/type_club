@@ -209,35 +209,9 @@ func FindBest(count int, db *sql.DB) ([]TypeRun, error) {
 		if err != nil {
 			return nil, err
 		}
-
-		// Query for the related RunInputs for each run
-		inputsQuery := "SELECT * FROM run_inputs WHERE run_id = ?"
-		inputRows, err := db.Query(inputsQuery, run.Id)
-		if err != nil {
-			return nil, err
-		}
-		defer inputRows.Close()
-
-		// Populate the Inputs field of the TypeRun
-		for inputRows.Next() {
-			var input RunInputs
-			err := inputRows.Scan(&input.Id, &input.RunId, &input.Value, &input.Time)
-			if err != nil {
-				return nil, err
-			}
-			run.Inputs = append(run.Inputs, input)
-		}
-
-		// Check for errors in scanning inputs
-		if err = inputRows.Err(); err != nil {
-			return nil, err
-		}
-
-		// Add the run to the list of best runs
 		runs = append(runs, run.Clean())
 	}
 
-	// Check for errors after reading all rows for runs
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
